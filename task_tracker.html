@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Task Tracker</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #EEF2FF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --border: #E5E7EB;
+            --bg: #FFFFFF;
+            --bg-light: #F9FAFB;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .auth-section {
+            background: var(--bg);
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .auth-section h2 {
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .auth-section p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .btn-auth {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-auth:hover {
+            background: #4338CA;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .sync-status {
+            display: inline-block;
+            padding: 8px 12px;
+            background: var(--bg-light);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 16px;
+        }
+
+        .sync-status.syncing {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+        }
+
+        .sync-status.synced {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .header {
+            background: var(--bg);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .header-left p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-email {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--bg);
+            color: var(--text-primary);
+        }
+
+        input[type="text"] {
+            flex: 1;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338CA;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .filter-btn {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary);
+        }
+
+        .sidebar {
+            background: var(--bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .team-member {
+            padding: 12px;
+            background: var(--bg-light);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-count {
+            background: var(--primary);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tasks-container {
+            background: var(--bg);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .task-item {
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            transition: background 0.2s;
+        }
+
+        .task-item:hover {
+            background: var(--bg-light);
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+        }
+
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: all 0.2s;
+        }
+
+        .task-checkbox:hover {
+            border-color: var(--primary);
+        }
+
+        .task-checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+            position: relative;
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .task-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .task-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .assignee-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .priority-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .priority-low {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .deadline {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: var(--bg-light);
+            border-radius: 4px;
+        }
+
+        .deadline.overdue {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .deadline.due-soon {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-delete {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .header-right {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Auth Section -->
+        <div id="authSection" class="auth-section">
+            <h2>Welcome to Task Tracker</h2>
+            <p>Connect your Google account to sync tasks across devices</p>
+            <button id="authorizeButton" class="btn-auth">Sign in with Google</button>
+        </div>
+
+        <!-- Main App Section (Hidden until logged in) -->
+        <div id="appSection" class="hidden">
+            <div class="header">
+                <div class="header-left">
+                    <h1>📋 Team Task Tracker</h1>
+                    <p>Manage your team's tasks, deadlines, and assignments</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-name" id="userName"></div>
+                        <div class="user-email" id="userEmail"></div>
+                        <div class="sync-status" id="syncStatus">Ready</div>
+                    </div>
+                    <button id="signoutButton" class="btn-logout">Sign Out</button>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completedTasks">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="overdueTasks">0</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="dueSoonTasks">0</div>
+                    <div class="stat-label">Due Soon</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="Add a new task..." />
+                    <input type="date" id="dueDate" />
+                    <select id="assigneeSelect">
+                        <option value="">Assign to...</option>
+                        <option value="You">You</option>
+                        <option value="Team Member 1">Team Member 1</option>
+                        <option value="Team Member 2">Team Member 2</option>
+                        <option value="Team Member 3">Team Member 3</option>
+                    </select>
+                    <select id="prioritySelect">
+                        <option value="medium">Priority</option>
+                        <option value="high">🔴 High</option>
+                        <option value="medium">🟡 Medium</option>
+                        <option value="low">🟢 Low</option>
+                    </select>
+                    <button class="btn-primary" onclick="handleAddTask()">Add Task</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <button class="filter-btn active" onclick="filterTasks('all')">All</button>
+                <button class="filter-btn" onclick="filterTasks('active')">Active</button>
+                <button class="filter-btn" onclick="filterTasks('completed')">Completed</button>
+                <button class="filter-btn" onclick="filterTasks('overdue')">Overdue</button>
+            </div>
+
+            <div class="main-grid">
+                <div class="tasks-container">
+                    <div id="tasksList"></div>
+                </div>
+
+                <div class="sidebar">
+                    <h3>👥 Your Team</h3>
+                    <div id="teamList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Google API Configuration
+        // IMPORTANT: Replace these with your actual credentials from Google Cloud Console
+        const CLIENT_ID = 'YOUR_CLIENT_ID_HERE';
+        const API_KEY = 'YOUR_API_KEY_HERE';
+        const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
+        const SPREADSHEET_NAME = 'WorkspaceTaskTracker';
+        
+        let tasks = [];
+        let currentFilter = 'all';
+        let spreadsheetId = null;
+        let sheetId = null;
+        let gapiInited = false;
+        let gisInited = false;
+        let tokenClient;
+
+        const team = ['You', 'Team Member 1', 'Team Member 2', 'Team Member 3'];
+
+        // Initialize GAPI
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+        }
+
+        async function initializeGapiClient() {
+            try {
+                await gapi.client.init({
+                    apiKey: API_KEY,
+                    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
+                                   'https://www.googleapis.com/discovery/v1/apis/sheets/v4/rest'],
+                });
+                gapiInited = true;
+                maybeEnableButtons();
+            } catch (error) {
+                console.error('Error initializing GAPI:', error);
+                alert('Error loading Google APIs. Check your API Key.');
+            }
+        }
+
+        // Initialize GIS (Google Identity Services)
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES.join(' '),
+                callback: '', // Set in handleAuthClick
+            });
+            gisInited = true;
+            maybeEnableButtons();
+        }
+
+        function maybeEnableButtons() {
+            if (gapiInited && gisInited) {
+                if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
+                    document.getElementById('authorizeButton').innerHTML = '⚠️ Add your Google credentials first (see code)';
+                    document.getElementById('authorizeButton').disabled = true;
+                } else {
+                    document.getElementById('authorizeButton').style.display = 'block';
+                }
+            }
+        }
+
+        // Handle authorization
+        function handleAuthClick() {
+            if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
+                alert('Please add your Google Cloud credentials to the HTML file first.');
+                return;
+            }
+            
+            tokenClient.callback = async (resp) => {
+                if (resp.error !== undefined) {
+                    throw (resp);
+                }
+                document.getElementById('authSection').classList.add('hidden');
+                document.getElementById('appSection').classList.remove('hidden');
+                loadUserInfo();
+                await initializeSpreadsheet();
+                loadTasks();
+            };
+
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token);
+                gapi.client.setToken(null);
+                document.getElementById('authSection').classList.remove('hidden');
+                document.getElementById('appSection').classList.add('hidden');
+                tasks = [];
+                spreadsheetId = null;
+            }
+        }
+
+        function loadUserInfo() {
+            gapi.client.drive.about.get({
+                'fields': 'user'
+            }).then((response) => {
+                const user = response.result.user;
+                document.getElementById('userName').textContent = user.displayName;
+                document.getElementById('userEmail').textContent = user.emailAddress;
+            });
+        }
+
+        // Initialize spreadsheet
+        async function initializeSpreadsheet() {
+            try {
+                // Check if spreadsheet exists
+                const response = await gapi.client.drive.files.list({
+                    'spaces': 'drive',
+                    'pageSize': 1,
+                    'fields': 'files(id, name)',
+                    'q': `name='${SPREADSHEET_NAME}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`
+                });
+
+                if (response.result.files.length > 0) {
+                    spreadsheetId = response.result.files[0].id;
+                } else {
+                    // Create new spreadsheet
+                    const newSheet = await gapi.client.sheets.spreadsheets.create({
+                        properties: {
+                            title: SPREADSHEET_NAME
+                        }
+                    });
+                    spreadsheetId = newSheet.result.spreadsheetId;
+
+                    // Add headers
+                    await gapi.client.sheets.spreadsheets.values.update({
+                        spreadsheetId: spreadsheetId,
+                        range: 'Sheet1!A1:G1',
+                        valueInputOption: 'RAW',
+                        resource: {
+                            values: [['ID', 'Title', 'Due Date', 'Assignee', 'Priority', 'Completed', 'Created At']]
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error initializing spreadsheet:', error);
+            }
+        }
+
+        // Load tasks from spreadsheet
+        async function loadTasks() {
+            if (!spreadsheetId) return;
+            
+            try {
+                updateSyncStatus('syncing');
+                const response = await gapi.client.sheets.spreadsheets.values.get({
+                    spreadsheetId: spreadsheetId,
+                    range: 'Sheet1'
+                });
+
+                const rows = response.result.values || [];
+                tasks = [];
+
+                // Skip header row
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (row.length >= 6) {
+                        tasks.push({
+                            id: row[0],
+                            title: row[1],
+                            dueDate: row[2],
+                            assignee: row[3],
+                            priority: row[4],
+                            completed: row[5] === 'TRUE',
+                            createdAt: row[6]
+                        });
+                    }
+                }
+
+                renderTasks();
+                updateTeamStats();
+                updateStats();
+                updateSyncStatus('synced');
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                updateSyncStatus('error');
+            }
+        }
+
+        // Save tasks to spreadsheet
+        async function saveTasks() {
+            if (!spreadsheetId) return;
+
+            try {
+                updateSyncStatus('syncing');
+                const rows = [['ID', 'Title', 'Due Date', 'Assignee', 'Priority', 'Completed', 'Created At']];
+                
+                tasks.forEach(task => {
+                    rows.push([
+                        task.id,
+                        task.title,
+                        task.dueDate || '',
+                        task.assignee,
+                        task.priority,
+                        task.completed ? 'TRUE' : 'FALSE',
+                        task.createdAt
+                    ]);
+                });
+
+                await gapi.client.sheets.spreadsheets.values.update({
+                    spreadsheetId: spreadsheetId,
+                    range: 'Sheet1',
+                    valueInputOption: 'RAW',
+                    resource: {
+                        values: rows
+                    }
+                });
+
+                updateSyncStatus('synced');
+            } catch (error) {
+                console.error('Error saving tasks:', error);
+                updateSyncStatus('error');
+            }
+        }
+
+        function updateSyncStatus(status) {
+            const el = document.getElementById('syncStatus');
+            if (status === 'syncing') {
+                el.className = 'sync-status syncing';
+                el.innerHTML = '<span class="spinner"></span>Syncing...';
+            } else if (status === 'synced') {
+                el.className = 'sync-status synced';
+                el.textContent = '✓ Synced';
+                setTimeout(() => {
+                    el.className = 'sync-status';
+                    el.textContent = 'Ready';
+                }, 2000);
+            } else if (status === 'error') {
+                el.className = 'sync-status';
+                el.textContent = '⚠ Sync failed';
+            } else {
+                el.className = 'sync-status';
+                el.textContent = 'Ready';
+            }
+        }
+
+        function handleAddTask() {
+            const input = document.getElementById('taskInput');
+            const dueDate = document.getElementById('dueDate');
+            const assignee = document.getElementById('assigneeSelect');
+            const priority = document.getElementById('prioritySelect');
+
+            if (!input.value.trim()) return;
+
+            const task = {
+                id: Date.now().toString(),
+                title: input.value,
+                dueDate: dueDate.value,
+                assignee: assignee.value || 'Unassigned',
+                priority: priority.value,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            tasks.push(task);
+            saveTasks();
+            
+            input.value = '';
+            dueDate.value = '';
+            assignee.value = '';
+            priority.value = 'medium';
+            
+            renderTasks();
+            updateTeamStats();
+            updateStats();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+            renderTasks();
+            updateTeamStats();
+            updateStats();
+        }
+
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                renderTasks();
+                updateStats();
+            }
+        }
+
+        function filterTasks(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            renderTasks();
+        }
+
+        function getFilteredTasks() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            return tasks.filter(task => {
+                if (currentFilter === 'active') return !task.completed;
+                if (currentFilter === 'completed') return task.completed;
+                if (currentFilter === 'overdue') {
+                    if (!task.dueDate || task.completed) return false;
+                    return new Date(task.dueDate) < today;
+                }
+                return true;
+            });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'No deadline';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function getDeadlineStatus(dateStr) {
+            if (!dateStr) return { class: '', text: 'No deadline' };
+            
+            const due = new Date(dateStr);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            due.setHours(0, 0, 0, 0);
+
+            const diff = due - today;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+            if (days < 0) return { class: 'overdue', text: `${Math.abs(days)}d overdue` };
+            if (days === 0) return { class: 'due-soon', text: 'Due today' };
+            if (days <= 3) return { class: 'due-soon', text: `${days}d left` };
+            return { class: '', text: formatDate(dateStr) };
+        }
+
+        function renderTasks() {
+            const filtered = getFilteredTasks();
+            const tasksList = document.getElementById('tasksList');
+
+            if (filtered.length === 0) {
+                tasksList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>No tasks</h3>
+                        <p>Add your first task to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            tasksList.innerHTML = filtered.map(task => {
+                const deadline = getDeadlineStatus(task.dueDate);
+                return `
+                    <div class="task-item ${task.completed ? 'completed' : ''}">
+                        <div class="task-checkbox ${task.completed ? 'checked' : ''}" 
+                             onclick="toggleTask('${task.id}')"></div>
+                        <div class="task-content">
+                            <div class="task-title">${escapeHtml(task.title)}</div>
+                            <div class="task-meta">
+                                <span class="task-meta-item">👤</span>
+                                <span class="assignee-badge">${escapeHtml(task.assignee)}</span>
+                                <span class="priority-badge priority-${task.priority}">
+                                    ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                                </span>
+                                <span class="deadline ${deadline.class}">📅 ${deadline.text}</span>
+                            </div>
+                        </div>
+                        <button class="btn-sm btn-delete" onclick="deleteTask('${task.id}')">Delete</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateTeamStats() {
+            const teamList = document.getElementById('teamList');
+            
+            const stats = team.map(member => {
+                const count = tasks.filter(t => t.assignee === member && !t.completed).length;
+                return { member, count };
+            });
+
+            teamList.innerHTML = stats.map(({ member, count }) => `
+                <div class="team-member">
+                    <span>${member}</span>
+                    <span class="task-count">${count}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const overdue = tasks.filter(t => {
+                if (t.completed || !t.dueDate) return false;
+                return new Date(t.dueDate) < today;
+            }).length;
+            const dueSoon = tasks.filter(t => {
+                if (t.completed || !t.dueDate) return false;
+                const due = new Date(t.dueDate);
+                const diff = due - today;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                return days >= 0 && days <= 3;
+            }).length;
+
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('overdueTasks').textContent = overdue;
+            document.getElementById('dueSoonTasks').textContent = dueSoon;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('authorizeButton').addEventListener('click', handleAuthClick);
+            document.getElementById('signoutButton').addEventListener('click', handleSignoutClick);
+            document.getElementById('taskInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleAddTask();
+            });
+        });
+    </script>
+    
+    <script async defer src="https://apis.google.com/js/platform.js" onload="gapiLoaded()" onload="gisLoaded()"></script>
+</body>
+</html>
