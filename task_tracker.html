@@ -675,29 +675,33 @@
 
         // Handle authorization
         function handleAuthClick() {
-            if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
-                alert('Please add your Google Cloud credentials to the HTML file first.');
-                return;
-            }
-            
-            tokenClient.callback = async (resp) => {
-                if (resp.error !== undefined) {
-                    throw (resp);
-                }
-                document.getElementById('authSection').classList.add('hidden');
-                document.getElementById('appSection').classList.remove('hidden');
-                loadUserInfo();
-                await initializeSpreadsheet();
-                loadTasks();
-            };
-
-            if (gapi.client.getToken() === null) {
-                tokenClient.requestAccessToken({prompt: 'consent'});
-            } else {
-                tokenClient.requestAccessToken({prompt: ''});
-            }
+    if (CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
+        alert('Please add your Google Cloud credentials to the HTML file first.');
+        return;
+    }
+    
+    if (!tokenClient) {
+        alert('Google authentication is still loading. Please wait a moment and try again.');
+        return;
+    }
+    
+    tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+            throw (resp);
         }
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('appSection').classList.remove('hidden');
+        loadUserInfo();
+        await initializeSpreadsheet();
+        loadTasks();
+    };
 
+    if (gapi.client.getToken() === null) {
+        tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+        tokenClient.requestAccessToken({prompt: ''});
+    }
+}
         function handleSignoutClick() {
             const token = gapi.client.getToken();
             if (token !== null) {
